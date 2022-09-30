@@ -35,7 +35,7 @@ if(!dir.exists(here("raw_data"))){
 #Download Metropolitain France's geometry
 if(!exists("france_metro")){
   if(!file.exists(here::here("raw_data","2020_France_metro_WGS84.geojson"))){
-    URLfr <- "https://github.com/nicolas-roelandt/lasso-data-analysis/raw/main/raw_data/2020_France_metro_WGS84.geojson"
+    URLfr <- "https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/raw_data/2020_France_metro_WGS84.geojson"
     france_metro <- geojson_sf(URLfr)
     st_write(france_metro,here::here("raw_data","2020_France_metro_WGS84.geojson"))
   }
