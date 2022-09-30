@@ -23,7 +23,7 @@ library(sf)
 library(geojsonsf)
 library(lubridate)
 
-here::i_am("vignettes/[Computing]Adding_weather.Rmd")
+here::i_am("vignettes/[Computing]Calculate_components.Rmd")
 
 if(!dir.exists(here("raw_data"))){
   dir.create(here("raw_data"))
