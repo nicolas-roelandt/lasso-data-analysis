@@ -2,9 +2,9 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-This short analysis explore the [data](https://research-data.ifsttar.fr/dataset.xhtml?persistentId=doi:10.25578/J5DG3W) collected by the [Noisecapture Android application](https://play.google.com/store/apps/details?id=org.noise_planet.noisecapture) between 2017 and 2020.
+This short analysis explore the [data](https://research-data.Universite-Gustave-Eiffel.fr/dataset.xhtml?persistentId=doi:10.25578/J5DG3W) collected by the [Noisecapture Android application](https://play.google.com/store/apps/details?id=org.noise_planet.noisecapture) between 2017 and 2020.
 
-Several [exploratory analysis](https://ifsttar.github.io/lasso-data-analysis/articles/) 
+Several [exploratory analysis](https://Universite-Gustave-Eiffel.github.io/lasso-data-analysis/articles/) 
 has been done, focusing on the tracks recorded in France.
 
 These preliminary works are part of the research carried out 
@@ -15,7 +15,7 @@ led by the [UMRAE laboratory](https://www.umrae.fr/en/) ([Univ. Gustave Eiffel](
 
 The raw data are available here :
 
-https://research-data.ifsttar.fr/dataset.xhtml?persistentId=doi:10.25578/J5DG3W
+https://data.univ-gustave-eiffel.fr/dataset.xhtml?persistentId=doi:10.25578/J5DG3W
 
 ## How to reproduce
 ### Build the database
@@ -34,28 +34,31 @@ https://research-data.ifsttar.fr/dataset.xhtml?persistentId=doi:10.25578/J5DG3W
 
 ### Get the source code
 
-As the analysis part of project as been treated as R package, there is several ways 
+As the analysis part of project as been treated as an R package, there is several ways 
 to get the code source:
-- using git
-
-```{bash git-clone, eval=FALSE}
-git clone https://github.com/ifsttar/lasso-data-analysis
-```
 
 - using R and the [remotes package](https://remotes.r-lib.org/):
 
 ```{r package-installation, eval=FALSE}
-# You can clone 
-
-# We suggest to use the remotes packages to install required packages
+# We suggest to use the remotes packages to install the package and the required packages
 # install.packages("remotes")
-remotes::install_github("ifsttar/lasso-data-analysis")
+remotes::install_github("Universite-Gustave-Eiffel/lasso-data-analysis")
 ```
 
-- download as a [zip archive](https://github.com/ifsttar/lasso-data-analysis/archive/refs/heads/main.zip)
+This method is encouraged as it will install dependencies as well.
+The source code will be installed with your other libraries.
+Use `.libPaths()` to find the folder where R libraries are installed on your computer.
 
-### Setting up R
-This analysis use several packages that you'll need to install beforehand.
+- using git
+
+```bash
+git clone https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis
+```
+
+- download as a [zip archive](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/archive/refs/heads/main.zip)
+
+If clone or download the source code as a zip, you will need to install several 
+R packages that are used in the differents vignettes.
 
 ```r
 # Package list
@@ -69,12 +72,14 @@ pkgs <- c("RPostgreSQL",
           "lubridate",
           "hydroTSM",
           "suncalc",
-          "xfun")
+          "xfun",
+          "captioner")
 
 # Packages installation from CRAN
 # Already installed packages won't be reinstalled
 remotes::install_cran(pkgs)
 ```
+
 ### Set connection parameters to the database
 
 Please be sure to adapt the connection parameters to your database.
@@ -100,20 +105,21 @@ that are stored in the `vignettes` folder.
 Each document is autonomous and can be executed independently (except for the 
 `Main_doc.Rmd` document which executes others).
 
-The [crowdsourced_acoustic_data_analysis_with_foss4g_2022.Rmd](https://github.com/Ifsttar/lasso-data-analysis/blob/main/vignettes/crowdsourced_acoustic_data_analysis_with_foss4g_2022.Rmd) vignette is the source code to the published article.
+The [crowdsourced_acoustic_data_analysis_with_foss4g_2022.Rmd](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/vignettes/crowdsourced_acoustic_data_analysis_with_foss4g_2022.Rmd) vignette is the source code to the published article.
 
-The [temporal_exploratory_analysis.Rmd](https://github.com/ifsttar/lasso-data-analysis/blob/main/vignettes/temporal_exploratory_analysis.Rmd) vignette corresponds to the first raw analysis.
+The [temporal_exploratory_analysis.Rmd](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/vignettes/temporal_exploratory_analysis.Rmd) vignette corresponds to the first raw analysis, that has been refined in the other vignettes afterwards.
 
-The [Main_doc.Rmd](https://github.com/Ifsttar/lasso-data-analysis/blob/main/vignettes/Main_doc.Rmd)
+The vignettes whose name begins with `[Analysis]` contain the analytical part. 
+They are based on pre-processed data that can be either downloaded from Zenodo 
+or generated locally using the documents whose name starts with `[Computing]`.
+The `[Computing]` documents must have a functional connection to the database 
+containing the noisecapture data and the corresponding views. See the [Build the database](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis#build-the-database)
+section for more informations about that.
+
+The [Main_doc.Rmd](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/vignettes/Main_doc.Rmd)
 vignettes calls and execute every `[Computing]` and `[Analysis]`.
 
-Those whose name begins with `[Analysis]` contain the analytical part. 
-They are based on pre-processed data that can be either downloaded from Zenodo 
-or generated using the documents whose name starts with `[Computing]`.
-The `[Computing]` documents must have a functional connection to the database 
-containing the noisecapture data and the corresponding views.
-
-
+**Warning**: At this point, it is not recommended to run [Main_doc.Rmd](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/vignettes/Main_doc.Rmd), there is an ongoing work onto the vignettes to make them more reproductible.
 
 
 
