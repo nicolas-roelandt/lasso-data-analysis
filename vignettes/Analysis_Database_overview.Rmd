@@ -65,7 +65,11 @@ The first step in our analysis of this database was to check the repartition, ac
 
 The first study to be carried out within the framework of this analysis is the overview of the temporal distribution of the users' data. Only the UTC time is retrieved during the measurement by the application, so we need to convert this UTC time into local time based on the geographical area of the measurement in order to perform our analysis. Considering this, only the recordings having a geographical measurement could be taken into account in this study. A loss of about 36% of the data is thus to be taken into account (localization not activated by the user for the time of the recording for example). This subset of our data does include both tagged and untagged tracks.
 
-The views are created on the POSTGRE database by the following SQL scripts : [link]
+The views are created on the PostgreSQL database by the following SQL scripts : 
+
+- [track_countries.sql](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/scripts/track_countries.sql)
+- [unique_track_tags.sql](https://github.com/Universite-Gustave-Eiffel/lasso-data-analysis/blob/main/scripts/unique_track_tags.sql)
+- 
 
 ```{r analysis-sql1, echo = FALSE, fig.align='center', out.width="80%", message = FALSE, fig.cap= fig_nums("sql1")}
 
@@ -122,7 +126,7 @@ In order to verify the limits of interpretation of our data, it is therefore imp
 
 ```{r visu-data, echo=FALSE, fig.align='center', out.width="80%", message = FALSE, fig.cap= fig_nums("sql3")}
 
-df_test <- inner_join(count_tags, count_tracks)
+df_test <- dplyr::inner_join(count_tags, count_tracks)
 
 df_test <- df_test %>% dplyr::mutate(percentage = count_hour_tag * 100 / count_hour)
 

@@ -39,6 +39,7 @@ Imports:
   - suncalc
   - xfun
   - captioner
+  - here
 Suggests: 
     knitr,
     rmarkdown

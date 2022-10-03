@@ -73,7 +73,8 @@ pkgs <- c("RPostgreSQL",
           "hydroTSM",
           "suncalc",
           "xfun",
-          "captioner")
+          "captioner",
+          "here")
 
 # Packages installation from CRAN
 # Already installed packages won't be reinstalled
