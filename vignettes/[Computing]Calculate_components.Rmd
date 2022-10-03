@@ -20,7 +20,6 @@ library(purrr)
 library(suncalc)
 library(here)
 library(sf)
-library(geojsonsf)
 library(lubridate)
 
 here::i_am("vignettes/[Computing]Calculate_components.Rmd")
