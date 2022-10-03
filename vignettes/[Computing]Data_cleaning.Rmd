@@ -33,7 +33,6 @@ port = 5432, #Port on which we ran the proxy
 user="noisecapture",
 password= Sys.getenv('noisecapture_password') # password stored in .Renviron. Use this to edit it : usethis::edit_r_environ()
 )
-
 ```
 
 

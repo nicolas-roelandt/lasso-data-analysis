@@ -14,7 +14,6 @@ editor_options:
 <!-- This file is for the calculation and implementation of numerous components, such as timezones and  sunrise data -->
 
 ```{r library-calculate-components, include=FALSE}
-
 library(dplyr)
 library(purrr)
 library(suncalc)
@@ -42,6 +41,18 @@ if(!exists("france_metro")){
   france_metro <- sf::st_read(here::here("raw_data","2020_France_metro_WGS84.geojson"))
   }
 }
+```
+
+```{r con-parameters, include = FALSE}
+drv <- DBI::dbDriver("PostgreSQL")
+con <- DBI::dbConnect(
+drv,
+dbname ="noisecapture",
+host = "lassopg.ifsttar.fr", #server IP or hostname
+port = 5432, #Port on which we ran the proxy
+user="noisecapture",
+password= Sys.getenv('noisecapture_password') # password stored in .Renviron. Use this to edit it : usethis::edit_r_environ()
+)
 ```
 
 ```{r adding-countries, include = FALSE, cache = TRUE}
