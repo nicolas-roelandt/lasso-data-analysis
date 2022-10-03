@@ -35,6 +35,8 @@ output:
 #knit: pagedown::chrome_print
 ---
 
+toto titi tata
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(captioner) # handle figures and tables numbering
