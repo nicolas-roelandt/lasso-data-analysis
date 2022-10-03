@@ -39,7 +39,7 @@ if(!exists("france_metro")){
     france_metro2 <- sf::st_read(here::here("raw_data","2020_France_metro_WGS84_2.geojson"))
   }
   else{
-  france_metro <- geojson_sf(here::here("raw_data","2020_France_metro_WGS84.geojson"))
+  france_metro <- sf::st_read(here::here("raw_data","2020_France_metro_WGS84.geojson"))
   }
 }
 ```
