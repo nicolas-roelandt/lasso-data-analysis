@@ -18,11 +18,12 @@ library(dplyr)
 library(sf)
 library(geosphere)
 library(CoordinateCleaner)
+library(LASSO)
 ```
 
 
-```{r, file=here::'../R/database-connection.R', include=FALSE}
-source(here::here("R/database-connection.R"))
+```{r, file='database-connection.R', include=FALSE}
+# source(here::here("R/database-connection.R"))
 ```
 
 ```{r data-retrieving, include = FALSE, cache = TRUE}
@@ -38,20 +39,8 @@ track_points <- sf::st_read(con,query = query) %>%
   dplyr::filter(pk_track %in% filtered_track_info$pk_track)
 ```
 
-```{r sfc-as-cols}
-sfc_as_cols <- function(x, names = c("lon","lat")) {
-  # source: https://github.com/r-spatial/sf/issues/231#issuecomment-282359896
-  stopifnot(inherits(x,"sf") && inherits(sf::st_geometry(x),"sfc_POINT"))
-  ret <- do.call(rbind,sf::st_geometry(x))
-  ret <- tibble::as_tibble(ret) %>% dplyr::select(-V3)
-  stopifnot(length(names) == ncol(ret))
-  ret <- setNames(ret,names)
-  dplyr::bind_cols(x,ret)
-}
-```
-
 ```{r clear-tempo-outliers, include = FALSE, cache = TRUE}
-coord_points <- sfc_as_cols(track_points)  %>% sf::st_drop_geometry()
+coord_points <- LASSO::sfc_as_cols(track_points)  %>% sf::st_drop_geometry()
 ```
 
 ```{r clear-tempo-outliers, include = FALSE, cache = TRUE}
