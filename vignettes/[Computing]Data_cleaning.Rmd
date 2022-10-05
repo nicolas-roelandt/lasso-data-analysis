@@ -14,50 +14,47 @@ editor_options:
 <!-- This file is for the cleaning of our database for our temporal analysis -->
 
 ```{r library-cleaning, include=FALSE}
-
-#geographical outliers manager
 library(dplyr)
 library(sf)
 library(geosphere)
 library(CoordinateCleaner)
-
 ```
 
-```{r con-parameters, include = FALSE}
-drv <- DBI::dbDriver("PostgreSQL")
-con <- DBI::dbConnect(
-drv,
-dbname ="noisecapture",
-host = "lassopg.ifsttar.fr", #server IP or hostname
-port = 5432, #Port on which we ran the proxy
-user="noisecapture",
-password= Sys.getenv('noisecapture_password') # password stored in .Renviron. Use this to edit it : usethis::edit_r_environ()
-)
-```
 
+```{r, file=here::'../R/database-connection.R', include=FALSE}
+source(here::here("R/database-connection.R"))
+```
 
 ```{r data-retrieving, include = FALSE, cache = TRUE}
 query <- "SELECT  tv.pk_track, record_utc, time_length, pleasantness, noise_level, geog FROM tracks_view as tv ;"
 
-filtered_track_info <- sf::st_read(con, query = query)
-
+filtered_track_info <- sf::st_read(con, query = query) %>% head(100)
 
 query <- "SELECT np.pk_point, np.pk_track, np.the_geom, np.accuracy FROM noisecapture_point as np
 INNER JOIN tracks_view tv ON np.pk_track = tv.pk_track
 WHERE np.accuracy > 0"
 
-track_points <- sf::st_read(con,query = query)
-st_crs(track_points) <- 4326
+track_points <- sf::st_read(con,query = query) %>% 
+  dplyr::filter(pk_track %in% filtered_track_info$pk_track)
+```
 
+```{r sfc-as-cols}
+sfc_as_cols <- function(x, names = c("lon","lat")) {
+  # source: https://github.com/r-spatial/sf/issues/231#issuecomment-282359896
+  stopifnot(inherits(x,"sf") && inherits(sf::st_geometry(x),"sfc_POINT"))
+  ret <- do.call(rbind,sf::st_geometry(x))
+  ret <- tibble::as_tibble(ret) %>% dplyr::select(-V3)
+  stopifnot(length(names) == ncol(ret))
+  ret <- setNames(ret,names)
+  dplyr::bind_cols(x,ret)
+}
 ```
 
 ```{r clear-tempo-outliers, include = FALSE, cache = TRUE}
+coord_points <- sfc_as_cols(track_points)  %>% sf::st_drop_geometry()
+```
 
-coord_points <- track_points %>% dplyr::bind_cols(
-  track_points %>% st_centroid() %>% st_coordinates() %>% as_tibble() %>% dplyr::select(lon = X, lat = Y))
-
-coord_points <- coord_points %>% sf::st_drop_geometry()
-
+```{r clear-tempo-outliers, include = FALSE, cache = TRUE}
 filtered_coord_points <- base::data.frame(matrix(ncol = 3, nrow = 0))
 colnames(filtered_coord_points) <- c('pk_track', 'lon', 'lat')
 datalist = list()
@@ -76,6 +73,7 @@ for(pk in filtered_track_info$pk_track){
   track <- coord_points %>% dplyr::filter(pk_track == pk)
   #Filter outliers based on the median distance between points
   x <- cc_outl(track, lon = "lon", lat = "lat", species = "pk_track", method = "mad", min_occs = 2, verbose = FALSE)
+  
   #Check if any point is still very far after the filtering, can occur if the track is solely composed of points very far from each others
   #In this case, the track is not usable and will not be kept (unit = m)
   x_coord <- x %>% select(lon,lat)
@@ -84,10 +82,6 @@ for(pk in filtered_track_info$pk_track){
     n = n+1
     next
   }
-#  if(any(as.double(st_distance(st_as_sf(x, coords=c("lon","lat"), crs = st_crs(4326)))) > 500)){
-#    n = n+1
-#    next
-#  }
   datalist[[n]] <- x
   n = n+1
 }
