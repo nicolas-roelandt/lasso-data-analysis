@@ -23,13 +23,13 @@ library(LASSO)
 
 
 ```{r, file='database-connection.R', include=FALSE}
-# source(here::here("R/database-connection.R"))
+# source(here::here("vignettes/database-connection.R"))
 ```
 
 ```{r data-retrieving, include = FALSE, cache = TRUE}
 query <- "SELECT  tv.pk_track, record_utc, time_length, pleasantness, noise_level, geog FROM tracks_view as tv ;"
 
-filtered_track_info <- sf::st_read(con, query = query) %>% head(100)
+filtered_track_info <- sf::st_read(con, query = query) %>% head(50)
 
 query <- "SELECT np.pk_point, np.pk_track, np.the_geom, np.accuracy FROM noisecapture_point as np
 INNER JOIN tracks_view tv ON np.pk_track = tv.pk_track
@@ -39,15 +39,17 @@ track_points <- sf::st_read(con,query = query) %>%
   dplyr::filter(pk_track %in% filtered_track_info$pk_track)
 ```
 
-```{r clear-tempo-outliers, include = FALSE, cache = TRUE}
+```{r extract-coordinates, include = FALSE}
 coord_points <- LASSO::sfc_as_cols(track_points)  %>% sf::st_drop_geometry()
 ```
 
 ```{r clear-tempo-outliers, include = FALSE, cache = TRUE}
+tictoc::tic()
 filtered_coord_points <- base::data.frame(matrix(ncol = 3, nrow = 0))
 colnames(filtered_coord_points) <- c('pk_track', 'lon', 'lat')
 datalist = list()
 datalist_pts = list()
+reject = list()
 n = 1
 #Loop to clean outliers points in tracks, does not consider tracks of 1
 for(pk in filtered_track_info$pk_track){
@@ -67,7 +69,9 @@ for(pk in filtered_track_info$pk_track){
   #In this case, the track is not usable and will not be kept (unit = m)
   x_coord <- x %>% select(lon,lat)
   temp <- sapply(2:nrow(x_coord),function(i){geosphere::distm(x_coord[i-1,],x_coord[i,])})
+  
   if(length(temp[temp > 8]) > 0){
+    reject[[n]] <- x 
     n = n+1
     next
   }
@@ -77,7 +81,57 @@ for(pk in filtered_track_info$pk_track){
 
 filtered_points = do.call(rbind, datalist_pts)
 filtered_coord_points = do.call(rbind, datalist)
+rejected_pk_track <- do.call(rbind, reject) %>% distinct(pk_track)
+tictoc::toc()
 ```
+
+```{r}
+# work on it by Nicolas
+tictoc::tic()
+# replace l56 -> l61
+# filter tracks with only a single point
+filtered_points2 <- filtered_track_info %>% filter(sf::st_geometry_type(geog) == "POINT")
+
+
+#replace l63 -> l65
+# Filter outliers based on the median distance between points
+filtered_pk_track <- coord_points %>% dplyr::filter(!pk_track %in% filtered_points2$pk_track) %>%
+  cc_outl(lon = "lon", lat = "lat", species = "pk_track", method = "mad", min_occs = 2, verbose = FALSE) %>%
+  
+  #Check if any point is still very far after the filtering, can occur if the track is solely composed of points very far from each others
+  #In this case, the track is not usable and will not be kept (unit = m)
+  # Check for each point of the track if the next one is within 8 meters
+  # use distHaversine because it works well with mutate
+    dplyr::select(pk_track,lon,lat) %>% 
+    dplyr::mutate(
+      dist = geosphere::distHaversine(cbind(lon, lat), # current point
+                                      cbind(lag(lon), lag(lat)) # previous point
+                                      )) %>%
+    dplyr::filter(dist < 8) %>% select(pk_track) %>% distinct(pk_track)
+
+filtered_coord_points2 <- coord_points %>% filter(pk_track %in% filtered_pk_track$pk_track)
+
+
+
+
+tictoc::toc()   
+```
+
+```{r}
+filtered_pk_track$pk_track
+filtered_track_info %>% st_drop_geometry() %>% filter(pk_track %in% filtered_pk_track$pk_track) %>% dim()
+
+
+filtered_coord_points %>%  distinct(pk_track) %>% dim()
+```
+
+
+```{r}
+all.equal(filtered_points, filtered_points2)
+all.equal(filtered_coord_points, filtered_coord_points2)
+```
+
+
 
 ```{r track-poly, include = FALSE, cache = TRUE}
 
